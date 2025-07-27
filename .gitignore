@@ -1,0 +1,15 @@
+# Byte-compiled / cache files
+__pycache__/
+*.pyc
+
+# Data files
+*.csv
+*.db
+*.parquet
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# OS or IDE files
+*.log
+.DS_Store
