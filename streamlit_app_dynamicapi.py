@@ -161,19 +161,19 @@ if "api_data" in st.session_state and not st.session_state["api_data"].empty:
 
     st.markdown("---")
 
-    # --- Save to OneDrive ---
-    st.markdown("### Auto-Save to OneDrive (for Power BI Sync)")
-    try:
-        output_folder = r"C:\Users\Aishwar\OneDrive - EDGE10 (UK) Ltd\Clients & Support - Export_Test_Python"
-        os.makedirs(output_folder, exist_ok=True)
+    # # --- Save to OneDrive ---
+    # st.markdown("### Auto-Save to OneDrive (for Power BI Sync)")
+    # try:
+    #     output_folder = r"C:\Users\Aishwar\OneDrive - EDGE10 (UK) Ltd\Clients & Support - Export_Test_Python"
+    #     os.makedirs(output_folder, exist_ok=True)
 
-        csv_path = os.path.join(output_folder, "soccerlab_data.csv")
-        parquet_path = os.path.join(output_folder, "soccerlab_data.parquet")
+    #     csv_path = os.path.join(output_folder, "soccerlab_data.csv")
+    #     parquet_path = os.path.join(output_folder, "soccerlab_data.parquet")
 
-        all_records.to_csv(csv_path, index=False)
-        all_records.to_parquet(parquet_path, index=False)
+    #     all_records.to_csv(csv_path, index=False)
+    #     all_records.to_parquet(parquet_path, index=False)
 
-        st.success(f"✅ Files saved to OneDrive folder: {output_folder}")
-    except Exception as e:
-        st.error(f"❌ Failed to write to OneDrive: {e}")
+    #     st.success(f"✅ Files saved to OneDrive folder: {output_folder}")
+    # except Exception as e:
+    #     st.error(f"❌ Failed to write to OneDrive: {e}")
 
