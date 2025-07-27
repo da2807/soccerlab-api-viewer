@@ -10,29 +10,36 @@ import os
 
 # --- Streamlit App Config ---
 st.set_page_config(page_title="SoccerLab API Viewer", layout="wide")
+
+# --- Custom Header (Clean + Modern) ---
 st.markdown("""
-    <h1 style='text-align: center;'>⚽ Generic SoccerLab API Viewer</h1>
-    <hr style='border:1px solid #ccc;'>
+    <h1 style='text-align: center; font-size: 2.2rem;'>SoccerLab API Viewer</h1>
+    <p style='text-align: center; color: grey;'>Query, filter, and download performance data with ease</p>
+    <hr style='border:1px solid #e0e0e0; margin-top: 10px;'>
 """, unsafe_allow_html=True)
 
-# --- User Inputs ---
-st.markdown("### 📥 API Fetcher")
+# --- API Form ---
+st.markdown("### API Settings")
 with st.form("api_form"):
-    api_url = st.text_input(
-        "Enter Full API URL", 
-        value="https://lfv.soccerlab.com/APIRest/v0.2/masterdata/seasonal_teams/seasonal_team_flattened9"
-    )
+    api_url = st.text_input("Enter Full API URL", value="")
+    username = st.text_input("API Username")
+    password = st.text_input("API Password", type="password")
     start_date = st.date_input("Start Date", value=datetime(2024, 7, 1))
     end_date = st.date_input("End Date", value=datetime(2025, 6, 30))
     limit = st.number_input("Limit per page", value=50, step=10, min_value=10)
-    submitted = st.form_submit_button("Fetch Data")
+    submitted = st.form_submit_button("🔄 Fetch and Load Data")
+
+st.markdown("---")
 
 # --- Fetch Data and Store in Session State ---
 if submitted and api_url:
-    auth = ("SL_Consultant", "S!6biYWe9q5KN*t^^ZE@")
+    if not username or not password:
+        st.warning("⚠️ Please enter both username and password.")
+        st.stop()
+
+    auth = (username, password)
     headers = {"Accept": "application/json"}
 
-    # Detect which date keys to use
     if "group_training" in api_url or "CreatedWhen" in api_url:
         date_param_from = "CreatedWhen_from"
         date_param_to = "CreatedWhen_to"
@@ -40,7 +47,6 @@ if submitted and api_url:
         date_param_from = "start_date"
         date_param_to = "end_date"
 
-    # Base query params
     base_params = {
         date_param_from: start_date.strftime("%Y-%m-%d"),
         date_param_to: end_date.strftime("%Y-%m-%d"),
@@ -51,6 +57,9 @@ if submitted and api_url:
 
     try:
         response = requests.get(api_url, headers=headers, auth=auth, params=base_params)
+        if response.status_code == 401:
+            st.error("❌ Authentication failed. Please check your username/password.")
+            st.stop()
         response.raise_for_status()
         data = response.json()
     except Exception as e:
@@ -61,12 +70,11 @@ if submitted and api_url:
     pages = math.ceil(total_count / limit)
     all_records = pd.json_normalize(data.get("Response", []))
 
-    # --- Progress Feedback ---
+    # --- Progress Bar ---
     progress_bar = st.progress(0)
     status_text = st.empty()
     start_time = time.time()
 
-    # --- Paginate through remaining pages ---
     for page in range(1, pages):
         percent_complete = int((page / pages) * 100)
         progress_bar.progress(percent_complete)
@@ -91,16 +99,14 @@ if submitted and api_url:
     elapsed = time.time() - start_time
     progress_bar.progress(100)
     status_text.text(f"✅ Finished fetching {len(all_records)} records in {elapsed:.2f} seconds.")
-
-    # Save in session state
     st.session_state["api_data"] = all_records
 
-# --- Use stored data if available ---
+# --- Use Stored Data ---
 if "api_data" in st.session_state and not st.session_state["api_data"].empty:
     all_records = st.session_state["api_data"]
 
-    # --- Optional Dynamic Filtering ---
-    st.markdown("### 🔎 Add Filters (Optional)")
+    # --- Filter Section ---
+    st.markdown("### Filter Data (Optional)")
     filter_cols = st.multiselect(
         "Select up to 5 columns to filter by", 
         options=all_records.columns.tolist(),
@@ -117,8 +123,10 @@ if "api_data" in st.session_state and not st.session_state["api_data"].empty:
     for col, selected_vals in filters.items():
         all_records = all_records[all_records[col].isin(selected_vals)]
 
-    # --- SQL Query Option ---
-    st.markdown("### 🧠 Advanced: Query Data with SQL (DuckDB)")
+    st.markdown("---")
+
+    # --- SQL Section ---
+    st.markdown("### SQL Query Editor")
     use_sql = st.checkbox("Enable SQL Editor")
 
     if use_sql:
@@ -134,23 +142,28 @@ if "api_data" in st.session_state and not st.session_state["api_data"].empty:
             st.error(f"SQL error: {e}")
             all_records = pd.DataFrame()
 
-    # --- Display Filtered Results ---
-    st.markdown("### 🔍 Filtered Data Preview")
+    st.markdown("---")
+
+    # --- Data Preview ---
+    st.markdown("### Data Preview")
     st.dataframe(all_records, use_container_width=True)
 
-    # --- Download Buttons ---
-    st.download_button("Download CSV", data=all_records.to_csv(index=False), file_name="api_data.csv", mime="text/csv")
+    st.markdown("---")
+
+    # --- Download Section ---
+    st.markdown("### Export Options")
+    st.download_button("⬇️ Download as CSV", data=all_records.to_csv(index=False), file_name="api_data.csv", mime="text/csv")
 
     parquet_buffer = io.BytesIO()
     all_records.to_parquet(parquet_buffer, index=False)
     parquet_buffer.seek(0)
-    st.download_button("Download Parquet", data=parquet_buffer, file_name="api_data.parquet", mime="application/octet-stream")
+    st.download_button("⬇️ Download as Parquet", data=parquet_buffer, file_name="api_data.parquet", mime="application/octet-stream")
 
-    # --- Auto Save to OneDrive Folder ---
-    st.markdown("### 💾 Auto-Save to OneDrive (for Power BI Sync)")
+    st.markdown("---")
 
+    # --- Save to OneDrive ---
+    st.markdown("### Auto-Save to OneDrive (for Power BI Sync)")
     try:
-        # Update this path to your actual OneDrive sync location
         output_folder = r"C:\Users\Aishwar\OneDrive - EDGE10 (UK) Ltd\Clients & Support - Export_Test_Python"
         os.makedirs(output_folder, exist_ok=True)
 
@@ -163,3 +176,4 @@ if "api_data" in st.session_state and not st.session_state["api_data"].empty:
         st.success(f"✅ Files saved to OneDrive folder: {output_folder}")
     except Exception as e:
         st.error(f"❌ Failed to write to OneDrive: {e}")
+
