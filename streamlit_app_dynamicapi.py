@@ -12,14 +12,16 @@ import os
 st.set_page_config(page_title="SoccerLab API Viewer", layout="wide")
 
 # --- Dark Theme Header ---
+# --- Dark Theme Header ---
 st.markdown("""
     <div style='text-align: center; padding-bottom: 0.5rem;'>
         <img src="https://img.icons8.com/fluency/48/football2.png" style="height:40px;">
-        <h1 style='color:#FF6F00;'>Soccer<span style="color:#00BFFF;">Lab API Viewer</span></h1>
+        <h1 style='color:#FF6F00;'>SoccerLab API Viewer</h1>
         <p style='color:#aaaaaa;'>Query, filter, and download performance data with ease</p>
     </div>
     <hr style='border:1px solid #444;'>
 """, unsafe_allow_html=True)
+
 
 # --- Custom CSS Styling ---
 st.markdown("""
