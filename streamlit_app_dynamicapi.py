@@ -27,6 +27,10 @@ with st.form("api_form"):
     start_date = st.date_input("Start Date", value=datetime(2024, 7, 1))
     end_date = st.date_input("End Date", value=datetime(2025, 6, 30))
     limit = st.number_input("Limit per page", value=50, step=10, min_value=10)
+    date_format = st.selectbox(
+        "Select date field format:",
+        ["CreatedWhen_from/to", "from/to", "start_date/end_date"]
+    )
     submitted = st.form_submit_button("🔄 Fetch and Load Data")
 
 st.markdown("---")
@@ -40,13 +44,18 @@ if submitted and api_url:
     auth = (username, password)
     headers = {"Accept": "application/json"}
 
-    if "group_training" in api_url or "CreatedWhen" in api_url:
+    # --- Date Parameter Assignment ---
+    if date_format == "CreatedWhen_from/to":
         date_param_from = "CreatedWhen_from"
         date_param_to = "CreatedWhen_to"
+    elif date_format == "from/to":
+        date_param_from = "from"
+        date_param_to = "to"
     else:
         date_param_from = "start_date"
         date_param_to = "end_date"
 
+    # --- Base Parameters ---
     base_params = {
         date_param_from: start_date.strftime("%Y-%m-%d"),
         date_param_to: end_date.strftime("%Y-%m-%d"),
@@ -161,7 +170,7 @@ if "api_data" in st.session_state and not st.session_state["api_data"].empty:
 
     st.markdown("---")
 
-    # # --- Save to OneDrive ---
+    # # Optional: Auto-Save to OneDrive (commented)
     # st.markdown("### Auto-Save to OneDrive (for Power BI Sync)")
     # try:
     #     output_folder = r"C:\Users\Aishwar\OneDrive - EDGE10 (UK) Ltd\Clients & Support - Export_Test_Python"
@@ -176,4 +185,5 @@ if "api_data" in st.session_state and not st.session_state["api_data"].empty:
     #     st.success(f"✅ Files saved to OneDrive folder: {output_folder}")
     # except Exception as e:
     #     st.error(f"❌ Failed to write to OneDrive: {e}")
+
 
