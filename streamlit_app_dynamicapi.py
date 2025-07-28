@@ -8,31 +8,57 @@ import time
 import duckdb
 import os
 
-# TEMP CHANGE FOR TESTING GIT PUSH
-
-# --- Streamlit App Config ---
+# --- Streamlit Config with Dark Theme Header ---
 st.set_page_config(page_title="SoccerLab API Viewer", layout="wide")
 
-# --- Custom Header (Clean + Modern) ---
+# --- Dark Theme Header ---
 st.markdown("""
-    <h1 style='text-align: center; font-size: 2.2rem;'>SoccerLab API Viewer</h1>
-    <p style='text-align: center; color: grey;'>Query, filter, and download performance data with ease</p>
-    <hr style='border:1px solid #e0e0e0; margin-top: 10px;'>
+    <div style='text-align: center; padding-bottom: 0.5rem;'>
+        <img src="https://img.icons8.com/fluency/48/football2.png" style="height:40px;">
+        <h1 style='color:#FF6F00;'>Soccer<span style="color:#00BFFF;">Lab API Viewer</span></h1>
+        <p style='color:#aaaaaa;'>Query, filter, and download performance data with ease</p>
+    </div>
+    <hr style='border:1px solid #444;'>
+""", unsafe_allow_html=True)
+
+# --- Custom CSS Styling ---
+st.markdown("""
+<style>
+input, select, textarea {
+    border-radius: 10px !important;
+    padding: 8px !important;
+}
+
+.stButton>button {
+    background-color: #00BFFF;
+    color: white;
+    font-weight: bold;
+    padding: 0.6rem 1.5rem;
+    border-radius: 10px;
+    border: none;
+}
+
+.stButton>button:hover {
+    background-color: #FF6F00;
+    color: white;
+}
+
+hr {
+    border-top: 1px solid #444;
+}
+</style>
 """, unsafe_allow_html=True)
 
 # --- API Form ---
-st.markdown("### API Settings")
+st.markdown("### ⚙️ API Settings")
 with st.form("api_form"):
-    api_url = st.text_input("Enter Full API URL", value="")
-    username = st.text_input("API Username")
-    password = st.text_input("API Password", type="password")
-    start_date = st.date_input("Start Date", value=datetime(2024, 7, 1))
-    end_date = st.date_input("End Date", value=datetime(2025, 6, 30))
-    limit = st.number_input("Limit per page", value=50, step=10, min_value=10)
-    date_format = st.selectbox(
-        "Select date field format:",
-        ["CreatedWhen_from/to", "from/to", "start_date/end_date"]
-    )
+    api_url = st.text_input("🔗 API URL", value="")
+    username = st.text_input("👤 API Username")
+    password = st.text_input("🔒 API Password", type="password")
+    start_date = st.date_input("📅 Start Date", value=datetime(2024, 7, 1))
+    end_date = st.date_input("📅 End Date", value=datetime(2025, 6, 30))
+    limit = st.number_input("🔢 Limit per page", value=50, step=10, min_value=10)
+    date_format = st.selectbox("🗂️ Select date field format:", ["CreatedWhen_from/to", "from/to", "start_date/end_date"])
     submitted = st.form_submit_button("🔄 Fetch and Load Data")
 
 st.markdown("---")
@@ -46,7 +72,6 @@ if submitted and api_url:
     auth = (username, password)
     headers = {"Accept": "application/json"}
 
-    # --- Date Parameter Assignment ---
     if date_format == "CreatedWhen_from/to":
         date_param_from = "CreatedWhen_from"
         date_param_to = "CreatedWhen_to"
@@ -57,7 +82,6 @@ if submitted and api_url:
         date_param_from = "start_date"
         date_param_to = "end_date"
 
-    # --- Base Parameters ---
     base_params = {
         date_param_from: start_date.strftime("%Y-%m-%d"),
         date_param_to: end_date.strftime("%Y-%m-%d"),
@@ -81,7 +105,6 @@ if submitted and api_url:
     pages = math.ceil(total_count / limit)
     all_records = pd.json_normalize(data.get("Response", []))
 
-    # --- Progress Bar ---
     progress_bar = st.progress(0)
     status_text = st.empty()
     start_time = time.time()
@@ -116,14 +139,8 @@ if submitted and api_url:
 if "api_data" in st.session_state and not st.session_state["api_data"].empty:
     all_records = st.session_state["api_data"]
 
-    # --- Filter Section ---
-    st.markdown("### Filter Data (Optional)")
-    filter_cols = st.multiselect(
-        "Select up to 5 columns to filter by", 
-        options=all_records.columns.tolist(),
-        max_selections=5
-    )
-
+    st.markdown("### 🧮 Filter Data (Optional)")
+    filter_cols = st.multiselect("Select up to 5 columns to filter by", options=all_records.columns.tolist(), max_selections=5)
     filters = {}
     for col in filter_cols:
         unique_vals = all_records[col].dropna().unique().tolist()
@@ -136,10 +153,8 @@ if "api_data" in st.session_state and not st.session_state["api_data"].empty:
 
     st.markdown("---")
 
-    # --- SQL Section ---
-    st.markdown("### SQL Query Editor")
+    st.markdown("### 🧠 SQL Query Editor")
     use_sql = st.checkbox("Enable SQL Editor")
-
     if use_sql:
         con = duckdb.connect()
         con.register("api_data", st.session_state["api_data"])
@@ -154,38 +169,14 @@ if "api_data" in st.session_state and not st.session_state["api_data"].empty:
             all_records = pd.DataFrame()
 
     st.markdown("---")
-
-    # --- Data Preview ---
-    st.markdown("### Data Preview")
+    st.markdown("### 👀 Data Preview")
     st.dataframe(all_records, use_container_width=True)
-
     st.markdown("---")
 
-    # --- Download Section ---
-    st.markdown("### Export Options")
+    st.markdown("### 📥 Export Options")
     st.download_button("⬇️ Download as CSV", data=all_records.to_csv(index=False), file_name="api_data.csv", mime="text/csv")
 
     parquet_buffer = io.BytesIO()
     all_records.to_parquet(parquet_buffer, index=False)
     parquet_buffer.seek(0)
     st.download_button("⬇️ Download as Parquet", data=parquet_buffer, file_name="api_data.parquet", mime="application/octet-stream")
-
-    st.markdown("---")
-
-    # # Optional: Auto-Save to OneDrive (commented)
-    # st.markdown("### Auto-Save to OneDrive (for Power BI Sync)")
-    # try:
-    #     output_folder = r"C:\Users\Aishwar\OneDrive - EDGE10 (UK) Ltd\Clients & Support - Export_Test_Python"
-    #     os.makedirs(output_folder, exist_ok=True)
-
-    #     csv_path = os.path.join(output_folder, "soccerlab_data.csv")
-    #     parquet_path = os.path.join(output_folder, "soccerlab_data.parquet")
-
-    #     all_records.to_csv(csv_path, index=False)
-    #     all_records.to_parquet(parquet_path, index=False)
-
-    #     st.success(f"✅ Files saved to OneDrive folder: {output_folder}")
-    # except Exception as e:
-    #     st.error(f"❌ Failed to write to OneDrive: {e}")
-
-
