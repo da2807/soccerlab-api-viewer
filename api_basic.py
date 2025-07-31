@@ -9,7 +9,9 @@ import pandas as pd
 
 # %%
 # API endpoint
-url = "https://oxfordunited1893.edge10online.co.uk/api/entity/"
+url = "https://mls1993.edge10online.com/api/entity"
+# https://mls1993.edge10online.com/api/entity
+# https://oxfordunited1893.edge10online.co.uk/api/entity/
 
 # %%
 # Your login credentials (replace these with your actual username and password)
@@ -37,7 +39,11 @@ print(df.head(10))
 
 
 # %%
-# With ContactType = 1
-df_players = df[df['contactType']==1]
+# With ContactType = 2
+df_players = df[df['contactType']==2]
 print(df_players)
 
+
+# %%
+df_players.to_csv("mls_users.csv", index=True)
+# %%

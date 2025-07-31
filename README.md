@@ -1,10 +1,24 @@
 # ⚽ SoccerLab Streamlit API Viewer
 
-This is a lightweight, user-friendly Streamlit app that allows users to query the SoccerLab API using customizable filters and download results as CSV or Parquet. It’s designed for performance staff, analysts, and coaches to explore seasonal team data quickly — without needing to write backend code.
+This is a lightweight, user-friendly Streamlit app that allows users to query the SoccerLab API using customizable filters and download results as CSV or Parquet. It’s designed for performance staff, analysts, and coaches to explore seasonal team data quickly without needing to write backend code.
+
+## Motivation 
+
+Power BI is great, but it struggles with APIs that use pagination especially when working with historical data over months or years. So I built a lightweight Streamlit app that lets us fetch the full dataset via API, apply filters or SQL if needed, and export it to Parquet/CSV. This makes Power BI run faster and gives us a quick way to explore data without re-fetching or writing slow Power Query loops
+
+
+## Ideal Use Cases
+✅ Building quick PoCs or dashboards from new APIs
+
+✅ Exploring long-term trends (1–5 years of data)
+
+✅ Prepping data before pushing into a proper ETL/dataflow
+
+✅ Working around slow/noisy APIs without waiting minutes each refresh
 
 ---
 
-## 🧰 Features
+## Features
 
 - Enter custom SoccerLab API URL
 - Select date range (start and end)
@@ -14,13 +28,27 @@ This is a lightweight, user-friendly Streamlit app that allows users to query th
 - Download filtered data as **CSV** or **Parquet**
 - Responsive, wide layout with centered headings
 
+
+## To Do
+
+- Support additional SoccerLab endpoints
+- Option to schedule daily data pulls
+- Build automation by scheduling the script and the let PBI fetch data
+
 ---
 
-## 🚀 How to Run the App
+## License
+
+This project is private and intended for internal use at EDGE10.  
+Contact the author for questions or collaboration.
+
+---
+
+## How to Run the App
 
 Make sure you have **Python 3.8+** and **Streamlit** installed.
 
-### 1️⃣ Install dependencies
+### Install dependencies
 
 If using `requirements.txt`:
 
@@ -60,18 +88,3 @@ streamlit_app/
 └── data/ # (Optional) Local data files
 
 ---
-
-## 🛠️ To Do
-
-- Add multi-select filter support
-- Add user login or session-based access
-- Improve error handling for API responses
-- Support additional SoccerLab endpoints
-- Option to schedule daily data pulls
-
----
-
-## 📄 License
-
-This project is private and intended for internal use at EDGE10.  
-Contact the author for questions or collaboration.

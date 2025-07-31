@@ -55,9 +55,25 @@ hr {
 st.markdown("### ⚙️ API Settings")
 with st.form("api_form"):
     api_url = st.text_input("🔗 API URL", value="")
+
+    with st.expander("💡 API Endpoint Examples"):
+        st.code("""
+# Players:
+# /masterdata/season_players/season_player_flattened1/search
+
+# Group Trainings:
+# /group_training/group_trainings/group_training_flattened1
+
+# Games:
+# /masterdata/games/game_flattened1
+
+# Scout:
+# /scouting/evaluation_report_players/evaluation_report_player_flattened1
+""", language="python")
+    
     username = st.text_input("👤 API Username")
     password = st.text_input("🔒 API Password", type="password")
-    start_date = st.date_input("📅 Start Date", value=datetime(2024, 7, 1))
+    start_date = st.date_input("📅 Start Date", value=datetime(2025, 1, 1))
     end_date = st.date_input("📅 End Date", value=datetime(2025, 6, 30))
     limit = st.number_input("🔢 Limit per page", value=50, step=10, min_value=10)
     date_format = st.selectbox("🗂️ Select date field format:", ["CreatedWhen_from/to", "from/to", "start_date/end_date"])
